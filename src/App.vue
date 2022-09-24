@@ -7,13 +7,8 @@
       <barra-lateral @aoAlterarTema="trocarTema" />
     </div>
     <div class="column is-three-quarter conteudo">
-      <formulario-tarefa @aoSalvarTarefa="salvarTarefa" />
-      <div class="lista">
-        <caixa-tarefa v-if="tarefas.length === 0">
-          Voce não está muito produtiovo hoje :(
-        </caixa-tarefa>
-        <tarefa-item v-for="(tarefa, i) in tarefas" :key="i" :tarefa="tarefa" />
-      </div>
+      <notificacao-componente />
+      <router-view></router-view>
     </div>
   </main>
 </template>
@@ -21,18 +16,14 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import BarraLateral from "./components/BarraLateral.vue";
-import FormularioTarefa from "./components/FormularioTarefa.vue";
-import TarefaItem from "./components/TarefaItem.vue";
 import ITarefa from "./interfaces/ITarefa";
-import CaixaTarefa from "./components/CaixaTarefa.vue";
+import NotificacaoComponente from "./components/NotificacaoComponente.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     BarraLateral,
-    FormularioTarefa,
-    TarefaItem,
-    CaixaTarefa,
+    NotificacaoComponente,
   },
   data() {
     return {

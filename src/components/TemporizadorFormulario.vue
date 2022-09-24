@@ -28,6 +28,11 @@ export default defineComponent({
     CronometroFormulario,
     BotaoTemporizador,
   },
+  props: {
+    projeto: {
+      type: String,
+    },
+  },
   data() {
     return {
       tempoEmSegundos: 0,
@@ -44,10 +49,12 @@ export default defineComponent({
       }, 1000);
     },
     finalizarContagem() {
-      this.cronometroRodando = false;
-      clearInterval(this.idIntervalo);
       this.$emit("aoTemporizadorFinalizado", this.tempoEmSegundos);
-      this.tempoEmSegundos = 0;
+      if (this.projeto) {
+        this.cronometroRodando = false;
+        clearInterval(this.idIntervalo);
+        this.tempoEmSegundos = 0;
+      }
     },
   },
 });
