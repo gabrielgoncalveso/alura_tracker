@@ -20,9 +20,10 @@
 <script lang="ts">
 import { TipoNotificacao } from "@/interfaces/INotificacao";
 import { useStore } from "@/store";
-import { ADICIONA_PROJETO, ALTERA_PROJETO } from "@/store/tipo-mutacoes";
-import { defineComponent } from "@vue/runtime-core";
+import { defineComponent, ref } from "@vue/runtime-core";
 import useNotificador from "@/hooks/notificador";
+import { ALTERAR_PROJETO, CADASTRAR_PROJETO } from "@/store/tipo-acoes";
+import { useRouter } from "vue-router";
 export default defineComponent({
   name: "FormularioProjeto",
   props: {
@@ -30,47 +31,49 @@ export default defineComponent({
       type: String,
     },
   },
-  mounted() {
-    if (this.id) {
-      const projeto = this.store.state.projetos.find(
-        (proj) => proj.id === this.id
+  setup(props) {
+    const store = useStore();
+    const { notificar } = useNotificador();
+    const nomeDoProjeto = ref("");
+    const router = useRouter();
+
+    if (props.id) {
+      const projeto = store.state.projeto.projetos.find(
+        (proj) => proj.id === props.id
       );
-      this.nomeDoProjeto = projeto?.nome || "";
+      nomeDoProjeto.value = projeto?.nome || "";
     }
-  },
-  data() {
-    return {
-      nomeDoProjeto: "",
-    };
-  },
-  methods: {
-    salvar() {
-      if (this.id) {
-        this.store.commit(ALTERA_PROJETO, {
-          id: this.id,
-          nome: this.nomeDoProjeto,
-        });
+
+    const salvar = () => {
+      if (props.id) {
+        store
+          .dispatch(ALTERAR_PROJETO, {
+            id: props.id,
+            nome: nomeDoProjeto.value,
+          })
+          .then(() => lidarComSucesso());
       } else {
-        this.store.commit(ADICIONA_PROJETO, this.nomeDoProjeto);
+        store
+          .dispatch(CADASTRAR_PROJETO, nomeDoProjeto.value)
+          .then(() => lidarComSucesso());
       }
+    };
 
-      this.nomeDoProjeto = "";
+    const lidarComSucesso = () => {
+      nomeDoProjeto.value = "";
 
-      this.notificar(
+      notificar(
         TipoNotificacao.SUCESSO,
         "Novo Projeto Adicionado",
         "Prontinho, seu projeto já está disponível"
       );
 
-      this.$router.push("/projetos");
-    },
-  },
-  setup() {
-    const store = useStore();
-    const { notificar } = useNotificador();
+      router.push("/projetos");
+    };
+
     return {
-      store,
-      notificar,
+      nomeDoProjeto,
+      salvar,
     };
   },
 });

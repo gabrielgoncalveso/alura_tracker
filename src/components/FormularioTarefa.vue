@@ -41,7 +41,7 @@
 <script lang="ts">
 import { TipoNotificacao } from "@/interfaces/INotificacao";
 import { useStore } from "@/store";
-import { computed, defineComponent } from "@vue/runtime-core";
+import { computed, defineComponent, ref } from "@vue/runtime-core";
 import TemporizadorFormulario from "./TemporizadorFormulario.vue";
 import useNotificador from "@/hooks/notificador";
 
@@ -51,17 +51,21 @@ export default defineComponent({
   components: {
     TemporizadorFormulario,
   },
-  data() {
-    return {
-      descricao: "",
-      idProjeto: "",
-    };
-  },
-  methods: {
-    finalizarTarefa(tempoDecorrido: number): void {
-      const projeto = this.projetos.find((proj) => proj.id === this.idProjeto);
+  setup(props, { emit }) {
+    const store = useStore();
+    const { notificar } = useNotificador();
+
+    const descricao = ref("");
+    const idProjeto = ref("");
+
+    const projetos = computed(() => store.state.projeto.projetos);
+
+    const finalizarTarefa = (tempoDecorrido: number): void => {
+      const projeto = projetos.value.find(
+        (proj) => proj.id === idProjeto.value
+      );
       if (projeto === undefined) {
-        this.notificar(
+        notificar(
           TipoNotificacao.ATENCAO,
           "Atenção",
           "Selecione um projeto antes de salvar a tarefas!"
@@ -69,20 +73,18 @@ export default defineComponent({
         return;
       }
 
-      this.$emit("aoSalvarTarefa", {
+      emit("aoSalvarTarefa", {
         duracaoEmSegundos: tempoDecorrido,
-        descricao: this.descricao,
+        descricao: descricao.value,
         projeto: projeto,
       });
-    },
-  },
-  setup() {
-    const store = useStore();
-    const { notificar } = useNotificador();
+    };
+
     return {
-      store,
-      notificar,
-      projetos: computed(() => store.state.projetos),
+      projetos,
+      descricao,
+      idProjeto,
+      finalizarTarefa,
     };
   },
 });

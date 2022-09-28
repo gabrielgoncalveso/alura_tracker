@@ -4,14 +4,16 @@
       <!-- <div class="column">
         {{ tarefa.id || "Tarefa sem Descrição" }}
       </div> -->
-      <div class="column is-4">
-        {{ tarefa.descricao || "Tarefa sem Descrição" }}
-      </div>
-      <div class="column is-3">
-        {{ tarefa.projeto?.nome || "Não Disponível" }}
-      </div>
-      <div class="column">
-        <cronometro-formulario :tempoEmSegundos="tarefa.duracaoEmSegundos" />
+      <div class="column is-9 columns clickavel" @click="tarefaClickada">
+        <div class="column is-5">
+          {{ tarefa.descricao || "Tarefa sem Descrição" }}
+        </div>
+        <div class="column is-4">
+          {{ tarefa.projeto?.nome || "Não Disponível" }}
+        </div>
+        <div class="column is-3">
+          <cronometro-formulario :tempoEmSegundos="tarefa.duracaoEmSegundos" />
+        </div>
       </div>
 
       <div class="column">
@@ -31,7 +33,7 @@ import { defineComponent, PropType } from "@vue/runtime-core";
 import CronometroFormulario from "./CronometroFormulario.vue";
 import CaixaTarefa from "./CaixaTarefa.vue";
 import { useStore } from "@/store";
-import { EXCLUIR_TAREFA } from "@/store/tipo-mutacoes";
+import { DELETAR_TAREFA } from "@/store/tipo-acoes";
 
 export default defineComponent({
   name: "TarefaItem",
@@ -39,24 +41,33 @@ export default defineComponent({
     CronometroFormulario,
     CaixaTarefa,
   },
-  methods: {
-    excluirTarefa(id: string) {
-      this.store.commit(EXCLUIR_TAREFA, id);
-    },
-  },
+  emits: ["aoTarefaClickada"],
   props: {
     tarefa: {
       type: Object as PropType<ITarefa>,
       required: true,
     },
   },
-  setup() {
+  setup(props, { emit }) {
     const store = useStore();
+
+    const excluirTarefa = (id: number) => {
+      store.dispatch(DELETAR_TAREFA, id);
+    };
+    const tarefaClickada = (): void => {
+      emit("aoTarefaClickada", props.tarefa);
+    };
+
     return {
-      store,
+      excluirTarefa,
+      tarefaClickada,
     };
   },
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.clickavel {
+  cursor: pointer;
+}
+</style>
